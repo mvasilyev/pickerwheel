@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker Wheel</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Picker Wheel</h1>
+        
+        <div class="input-section">
+            <div class="input-group">
+                <input type="text" id="contestantInput" placeholder="Enter contestant name">
+                <button id="addBtn">Add</button>
+            </div>
+            
+            <div class="contestants-list">
+                <h3>Contestants:</h3>
+                <ul id="contestantsList"></ul>
+            </div>
+            
+            <button id="clearBtn">Clear All</button>
+        </div>
+        
+        <div class="wheel-section">
+            <div class="wheel-container">
+                <canvas id="wheelCanvas" width="400" height="400"></canvas>
+                <div class="pointer"></div>
+            </div>
+            
+            <div class="spin-buttons">
+                <button id="spinBtn" disabled>SPIN</button>
+                <button id="respinBtn" disabled>RE-SPIN</button>
+            </div>
+            
+            <div id="result" class="result"></div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
