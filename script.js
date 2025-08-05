@@ -262,9 +262,14 @@ class PickerWheel {
         const normalizedRotation = this.rotation % (2 * Math.PI);
         const angleStep = (2 * Math.PI) / this.contestants.length;
         
-        // The pointer points to the top, so we need to account for that
-        // We want to find which segment the top pointer is pointing to
-        let winnerIndex = Math.floor((2 * Math.PI - normalizedRotation) / angleStep) % this.contestants.length;
+        // The pointer is at the top pointing down
+        // We need to find which segment is at the top (angle = -PI/2 or 3*PI/2)
+        // Since wheel rotates clockwise and segments start at angle 0 (right side)
+        // The top position is at -PI/2, so we need to adjust for that
+        const topAngle = (3 * Math.PI / 2 - normalizedRotation) % (2 * Math.PI);
+        const adjustedAngle = topAngle < 0 ? topAngle + 2 * Math.PI : topAngle;
+        
+        let winnerIndex = Math.floor(adjustedAngle / angleStep) % this.contestants.length;
         
         const winner = this.contestants[winnerIndex];
         this.lastWinner = winner;
