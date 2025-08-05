@@ -84,6 +84,15 @@ class PickerWheel {
     updateButtons() {
         this.spinBtn.disabled = this.contestants.length < 2 || this.isSpinning;
         this.respinBtn.disabled = !this.hasSpun || this.isSpinning || this.contestants.length < 2;
+        
+        // Update button text based on number of contestants
+        if (this.contestants.length === 2) {
+            this.spinBtn.textContent = 'FLIP COIN';
+            this.respinBtn.textContent = 'FLIP AGAIN';
+        } else {
+            this.spinBtn.textContent = 'SPIN';
+            this.respinBtn.textContent = 'RE-SPIN';
+        }
     }
     
     clearResult() {
@@ -138,6 +147,12 @@ class PickerWheel {
             return;
         }
         
+        // Special case for 2 contestants - draw a coin
+        if (this.contestants.length === 2) {
+            this.drawCoin(centerX, centerY, radius);
+            return;
+        }
+        
         const angleStep = (2 * Math.PI) / this.contestants.length;
         const colors = this.generateColors(this.contestants.length);
         
@@ -178,6 +193,95 @@ class PickerWheel {
         this.ctx.fill();
     }
     
+    drawCoin(centerX, centerY, radius) {
+        // Calculate flip rotation based on wheel rotation
+        const flipRotation = this.rotation * .5; // Slower, more realistic flips
+        const normalizedFlip = Math.abs(flipRotation) % (2 * Math.PI);
+        
+        // Calculate 3D flip effect - cos gives us the "thickness" of the coin
+        const flipFactor = Math.cos(normalizedFlip);
+        const isShowingFront = flipFactor > 0;
+        const coinThickness = Math.abs(flipFactor);
+        
+        // Adjust radius based on flip perspective
+        const currentRadius = radius * (0.3 + 0.7 * coinThickness);
+        
+        // Draw coin base with perspective
+        this.ctx.save();
+        this.ctx.scale(1, coinThickness);
+        
+        this.ctx.beginPath();
+        this.ctx.arc(centerX, centerY / coinThickness, currentRadius, 0, 2 * Math.PI);
+        
+        // Create gradient for coin effect
+        const gradient = this.ctx.createRadialGradient(
+            centerX - 50, centerY / coinThickness - 50, 0, 
+            centerX, centerY / coinThickness, currentRadius
+        );
+        
+        if (isShowingFront) {
+            // Gold side (HEADS)
+            gradient.addColorStop(0, '#FFD700');
+            gradient.addColorStop(0.7, '#FFA500');
+            gradient.addColorStop(1, '#FF8C00');
+        } else {
+            // Silver side (TAILS)
+            gradient.addColorStop(0, '#E5E5E5');
+            gradient.addColorStop(0.7, '#C0C0C0');
+            gradient.addColorStop(1, '#A0A0A0');
+        }
+        
+        this.ctx.fillStyle = gradient;
+        this.ctx.fill();
+        
+        // Draw border
+        this.ctx.strokeStyle = isShowingFront ? '#B8860B' : '#808080';
+        this.ctx.lineWidth = 5;
+        this.ctx.stroke();
+        
+        this.ctx.restore();
+        
+        // Only draw text when coin is relatively flat (not mid-flip)
+        if (coinThickness > 0.3) {
+            this.ctx.fillStyle = isShowingFront ? '#8B4513' : '#2F2F2F';
+            this.ctx.textAlign = 'center';
+            
+            if (isShowingFront) {
+                // HEADS side
+                this.ctx.font = `bold ${24 * coinThickness}px Arial`;
+                this.ctx.fillText('HEADS', centerX, centerY - 15);
+                
+                this.ctx.font = `bold ${18 * coinThickness}px Arial`;
+                this.ctx.fillText(this.contestants[0], centerX, centerY + 15);
+            } else {
+                // TAILS side
+                this.ctx.font = `bold ${24 * coinThickness}px Arial`;
+                this.ctx.fillText('TAILS', centerX, centerY - 15);
+                
+                this.ctx.font = `bold ${18 * coinThickness}px Arial`;
+                this.ctx.fillText(this.contestants[1], centerX, centerY + 15);
+            }
+        }
+        
+        // Add edge effect when coin is very thin (mid-flip)
+        if (coinThickness < 0.2) {
+            this.ctx.fillStyle = '#8B4513';
+            this.ctx.fillRect(centerX - currentRadius, centerY - 3, currentRadius * 2, 6);
+        }
+        
+        // Add decorative border when coin is visible enough
+        if (coinThickness > 0.4) {
+            this.ctx.save();
+            this.ctx.scale(1, coinThickness);
+            this.ctx.beginPath();
+            this.ctx.arc(centerX, centerY / coinThickness, currentRadius - 20, 0, 2 * Math.PI);
+            this.ctx.strokeStyle = isShowingFront ? '#8B4513' : '#2F2F2F';
+            this.ctx.lineWidth = 2;
+            this.ctx.stroke();
+            this.ctx.restore();
+        }
+    }
+    
     generateColors(count) {
         const colors = [];
         const hueStep = 360 / count;
@@ -197,9 +301,9 @@ class PickerWheel {
         this.updateButtons();
         this.clearResult();
         
-        // Random spin amount (multiple rotations + random angle)
-        const minSpins = 5;
-        const maxSpins = 10;
+        // Random spin amount (fewer rotations for shorter animation)
+        const minSpins = 3;
+        const maxSpins = 6;
         const spins = Math.random() * (maxSpins - minSpins) + minSpins;
         const finalRotation = spins * 2 * Math.PI;
         
@@ -217,9 +321,9 @@ class PickerWheel {
         this.result.textContent = '🔄 Re-spinning...';
         this.result.className = 'result';
         
-        // Random spin amount for re-spin
-        const minSpins = 5;
-        const maxSpins = 10;
+        // Random spin amount for re-spin (fewer rotations)
+        const minSpins = 3;
+        const maxSpins = 6;
         const spins = Math.random() * (maxSpins - minSpins) + minSpins;
         const finalRotation = spins * 2 * Math.PI;
         
@@ -230,7 +334,7 @@ class PickerWheel {
     animateWheel(finalRotation) {
         const startRotation = this.rotation;
         const totalRotation = finalRotation;
-        const duration = 4000; // 4 seconds
+        const duration = 2500; // Reduced from 4000ms to 2.5 seconds
         const startTime = Date.now();
         
         const animate = () => {
@@ -258,25 +362,38 @@ class PickerWheel {
         this.hasSpun = true;
         this.updateButtons();
         
-        // Calculate winner
-        const normalizedRotation = this.rotation % (2 * Math.PI);
-        const angleStep = (2 * Math.PI) / this.contestants.length;
+        let winner;
         
-        // The pointer is at the top pointing down
-        // We need to find which segment is at the top (angle = -PI/2 or 3*PI/2)
-        // Since wheel rotates clockwise and segments start at angle 0 (right side)
-        // The top position is at -PI/2, so we need to adjust for that
-        const topAngle = (3 * Math.PI / 2 - normalizedRotation) % (2 * Math.PI);
-        const adjustedAngle = topAngle < 0 ? topAngle + 2 * Math.PI : topAngle;
+        // Special case for coin toss (2 contestants)
+        if (this.contestants.length === 2) {
+            const flipRotation = this.rotation * 2;
+            const normalizedFlip = Math.abs(flipRotation) % (2 * Math.PI);
+            const flipFactor = Math.cos(normalizedFlip);
+            const isHeads = flipFactor > 0;
+            
+            winner = isHeads ? this.contestants[0] : this.contestants[1];
+            const coinSide = isHeads ? 'HEADS' : 'TAILS';
+            
+            // Display coin toss result
+            this.result.textContent = `🪙 ${coinSide}! Winner: ${winner} 🎉`;
+            this.result.className = 'result winner';
+        } else {
+            // Regular wheel calculation for 3+ contestants
+            const normalizedRotation = this.rotation % (2 * Math.PI);
+            const angleStep = (2 * Math.PI) / this.contestants.length;
+            
+            const topAngle = (3 * Math.PI / 2 - normalizedRotation) % (2 * Math.PI);
+            const adjustedAngle = topAngle < 0 ? topAngle + 2 * Math.PI : topAngle;
+            
+            let winnerIndex = Math.floor(adjustedAngle / angleStep) % this.contestants.length;
+            winner = this.contestants[winnerIndex];
+            
+            // Display wheel result
+            this.result.textContent = `🎉 Winner: ${winner} 🎉`;
+            this.result.className = 'result winner';
+        }
         
-        let winnerIndex = Math.floor(adjustedAngle / angleStep) % this.contestants.length;
-        
-        const winner = this.contestants[winnerIndex];
         this.lastWinner = winner;
-        
-        // Display result
-        this.result.textContent = `🎉 Winner: ${winner} 🎉`;
-        this.result.className = 'result winner';
     }
 }
 
