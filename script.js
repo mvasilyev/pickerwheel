@@ -7,6 +7,8 @@ class PickerWheel {
         this.rotation = 0;
         this.hasSpun = false;
         this.lastWinner = null;
+    // Easter egg: grayscale mode when URL has ?polish
+    this.grayscaleMode = new URLSearchParams(window.location.search).has('polish');
         
         this.initializeElements();
         this.setupEventListeners();
@@ -283,14 +285,27 @@ class PickerWheel {
     }
     
     generateColors(count) {
+        // If grayscale easter egg is active, return grayscale colors
+        if (this.grayscaleMode) {
+            const grays = [];
+            // Distribute lightness between 30% and 60% for good contrast with white text
+            const minL = 30;
+            const maxL = 60;
+            const step = count > 1 ? (maxL - minL) / (count - 1) : 0;
+            for (let i = 0; i < count; i++) {
+                const lightness = Math.round(minL + i * step);
+                grays.push(`hsl(0, 0%, ${lightness}%)`);
+            }
+            return grays;
+        }
+
+        // Default: rainbow hues around the wheel
         const colors = [];
         const hueStep = 360 / count;
-        
         for (let i = 0; i < count; i++) {
             const hue = i * hueStep;
             colors.push(`hsl(${hue}, 70%, 60%)`);
         }
-        
         return colors;
     }
     

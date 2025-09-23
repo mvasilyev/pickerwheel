@@ -56,6 +56,13 @@ A simple and interactive picker wheel application for randomly selecting contest
 - Useful for best-of-three scenarios or multiple rounds
 - Smart button management - re-spin only available after initial spin
 
+### 🥚 Easter Egg: Grayscale "Polish" Mode
+- Add the query parameter `?polish` to the URL to switch the wheel to a grayscale theme
+- Example:
+   - Local file: `index.html?polish`
+   - Served app: `https://your-host/index.html?polish`
+- All wheel segments will render in varying grayscale instead of rainbow hues
+
 ## Running the Application
 
 Simply open `index.html` in your web browser. No server or additional setup required!
