@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker Wheel — Create Room</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container landing">
+        <h1>Picker Wheel</h1>
+
+        <form id="createForm" class="create-form">
+            <label for="topicInput">Room topic</label>
+            <input type="text" id="topicInput" placeholder="e.g. Where do we eat today?" required>
+            <button type="submit">Create Room</button>
+        </form>
+
+        <div id="result" class="result" style="display:none">
+            <p>Room created! Share this link with participants:</p>
+            <div class="link-box">
+                <a id="participantLink" href="#" target="_blank"></a>
+            </div>
+            <p style="margin-top:12px">Your admin panel:</p>
+            <div class="link-box">
+                <a id="adminLink" href="#" target="_blank"></a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('createForm');
+        const result = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const topic = document.getElementById('topicInput').value.trim();
+            if (!topic) return;
+
+            const res = await fetch('/api/rooms', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ topic }),
+            });
+            const data = await res.json();
+
+            const base = window.location.origin;
+            const participantUrl = `${base}/room/${data.id}`;
+            const adminUrl = `${base}/room/${data.id}/admin?token=${data.adminToken}`;
+
+            document.getElementById('participantLink').href = participantUrl;
+            document.getElementById('participantLink').textContent = participantUrl;
+            document.getElementById('adminLink').href = adminUrl;
+            document.getElementById('adminLink').textContent = adminUrl;
+
+            form.style.display = 'none';
+            result.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker Wheel — Admin</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="topic">Picker Wheel</h1>
+
+        <div class="input-section">
+            <div id="statusBar" class="status-bar"></div>
+
+            <div class="contestants-list">
+                <h3>Entries:</h3>
+                <ul id="contestantsList"></ul>
+                <p id="emptyMsg" style="color:#999; padding:10px">No entries yet.</p>
+            </div>
+
+            <div class="admin-actions">
+                <button id="closeBtn" class="action-btn close-btn">Close Submissions</button>
+                <button id="reopenBtn" class="action-btn reopen-btn" style="display:none">Re-open Submissions</button>
+                <button id="refreshBtn" class="action-btn refresh-btn">Refresh</button>
+            </div>
+
+            <div id="participantLink" class="link-box" style="margin-top:10px"></div>
+        </div>
+
+        <div class="wheel-section">
+            <div class="wheel-container">
+                <canvas id="wheelCanvas" width="400" height="400"></canvas>
+                <div class="pointer"></div>
+            </div>
+
+            <div class="spin-buttons">
+                <button id="spinBtn" disabled>SPIN</button>
+                <button id="respinBtn" disabled>RE-SPIN</button>
+            </div>
+
+            <div id="result" class="result"></div>
+
+            <button id="publishBtn" class="action-btn publish-btn" style="display:none">
+                Publish Winner
+            </button>
+        </div>
+    </div>
+
+    <script src="/wheel.js"></script>
+    <script>
+        const roomId = window.location.pathname.split('/')[2];
+        const urlToken = new URLSearchParams(window.location.search).get('token');
+        let room = null;
+        let entries = [];
+        let wheel = null;
+
+        // --- Init ---
+
+        async function init() {
+            // First call authenticates and sets cookie (token in URL)
+            const qs = urlToken ? `?token=${encodeURIComponent(urlToken)}` : '';
+            const res = await fetch(`/api/rooms/${roomId}/admin${qs}`);
+            if (!res.ok) {
+                document.body.innerHTML = '<h1 style="color:white;text-align:center;margin-top:40vh">Access denied</h1>';
+                return;
+            }
+
+            const data = await res.json();
+            room = data;
+            entries = data.entries;
+
+            // Strip token from URL after cookie is set
+            if (window.location.search.includes('token=')) {
+                history.replaceState(null, '', window.location.pathname);
+            }
+
+            document.getElementById('topic').textContent = room.topic;
+
+            // Show participant link
+            const pLink = `${window.location.origin}/room/${roomId}`;
+            document.getElementById('participantLink').innerHTML =
+                `Share with participants: <a href="${pLink}" target="_blank">${pLink}</a>`;
+
+            wheel = new PickerWheel();
+            render();
+        }
+
+        function render() {
+            renderStatus();
+            renderEntries();
+            loadWheelContestants();
+        }
+
+        function renderStatus() {
+            const bar = document.getElementById('statusBar');
+            const status = room.status;
+            bar.textContent = status === 'open'
+                ? 'Submissions are OPEN'
+                : status === 'closed'
+                ? 'Submissions are CLOSED'
+                : `Finished — Winner: ${room.winner}`;
+            bar.className = `status-bar status-${status}`;
+
+            document.getElementById('closeBtn').style.display =
+                status === 'open' ? '' : 'none';
+            document.getElementById('reopenBtn').style.display =
+                status === 'closed' ? '' : 'none';
+        }
+
+        function renderEntries() {
+            const list = document.getElementById('contestantsList');
+            const emptyMsg = document.getElementById('emptyMsg');
+            list.innerHTML = '';
+
+            const approvedEntries = entries.filter(e => e.approved);
+
+            if (entries.length === 0) {
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            emptyMsg.style.display = 'none';
+
+            entries.forEach((entry) => {
+                const li = document.createElement('li');
+                li.className = entry.approved ? '' : 'entry-hidden';
+                li.innerHTML = `
+                    <span><strong>${esc(entry.author_name)}</strong>: ${esc(entry.value)}</span>
+                    <span class="entry-actions">
+                        <button class="remove-btn" onclick="toggleEntry(${entry.id}, ${entry.approved ? 0 : 1})">${entry.approved ? 'Hide' : 'Show'}</button>
+                        <button class="remove-btn" onclick="deleteEntry(${entry.id})">Delete</button>
+                    </span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function loadWheelContestants() {
+            if (!wheel) return;
+            const approved = entries.filter(e => e.approved);
+            wheel.contestants = approved.map(e => `${e.value} (${e.author_name})`);
+            wheel.updateContestantsList();
+            wheel.drawWheel();
+            wheel.updateButtons();
+        }
+
+        // --- Actions ---
+
+        async function refresh() {
+            const res = await fetch(`/api/rooms/${roomId}/admin`);
+            const data = await res.json();
+            room = data;
+            entries = data.entries;
+            render();
+        }
+
+        async function closeSubmissions() {
+            await fetch(`/api/rooms/${roomId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'closed' }),
+            });
+            room.status = 'closed';
+            render();
+        }
+
+        async function reopenSubmissions() {
+            await fetch(`/api/rooms/${roomId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: 'open' }),
+            });
+            room.status = 'open';
+            render();
+        }
+
+        async function toggleEntry(entryId, approved) {
+            await fetch(`/api/rooms/${roomId}/entries/${entryId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ approved: !!approved }),
+            });
+            const entry = entries.find(e => e.id === entryId);
+            if (entry) entry.approved = approved;
+            render();
+        }
+
+        async function deleteEntry(entryId) {
+            await fetch(`/api/rooms/${roomId}/entries/${entryId}`, {
+                method: 'DELETE',
+            });
+            entries = entries.filter(e => e.id !== entryId);
+            render();
+        }
+
+        async function publishWinner() {
+            if (!wheel || !wheel.lastWinner) return;
+            await fetch(`/api/rooms/${roomId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ winner: wheel.lastWinner }),
+            });
+            room.status = 'finished';
+            room.winner = wheel.lastWinner;
+            render();
+        }
+
+        function esc(s) {
+            const d = document.createElement('div');
+            d.textContent = s;
+            return d.innerHTML;
+        }
+
+        // --- Wire up buttons ---
+
+        document.getElementById('closeBtn').addEventListener('click', closeSubmissions);
+        document.getElementById('reopenBtn').addEventListener('click', reopenSubmissions);
+        document.getElementById('refreshBtn').addEventListener('click', refresh);
+        document.getElementById('publishBtn').addEventListener('click', publishWinner);
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+node_modules
+server/node_modules
+server/pickerwheel.db
+server/test.js
+.git

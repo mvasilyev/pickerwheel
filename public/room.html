@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Picker Wheel — Room</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+    <div class="container landing">
+        <h1>Picker Wheel</h1>
+
+        <div id="loading">Loading...</div>
+
+        <!-- Room is open: show submission form -->
+        <div id="openView" style="display:none">
+            <h2 id="topic" class="topic"></h2>
+            <form id="entryForm" class="create-form">
+                <label for="authorInput">Your name</label>
+                <input type="text" id="authorInput" placeholder="e.g. John" required>
+                <label for="valueInput">Your pick</label>
+                <input type="text" id="valueInput" placeholder="e.g. Pizza" required>
+                <button type="submit">Submit</button>
+            </form>
+            <div id="submitted" class="result" style="display:none">
+                Submitted! The admin will spin the wheel when everyone's ready.
+            </div>
+        </div>
+
+        <!-- Room is closed: waiting -->
+        <div id="closedView" style="display:none">
+            <h2 id="topicClosed" class="topic"></h2>
+            <div class="result">Submissions are closed. The wheel will be spun soon!</div>
+        </div>
+
+        <!-- Room is finished: show winner -->
+        <div id="finishedView" style="display:none">
+            <h2 id="topicFinished" class="topic"></h2>
+            <div class="result winner" id="winnerResult"></div>
+        </div>
+    </div>
+
+    <script>
+        const roomId = window.location.pathname.split('/')[2];
+
+        async function load() {
+            const res = await fetch(`/api/rooms/${roomId}`);
+            if (!res.ok) {
+                document.getElementById('loading').textContent = 'Room not found.';
+                return;
+            }
+            const room = await res.json();
+            document.getElementById('loading').style.display = 'none';
+
+            if (room.status === 'open') {
+                document.getElementById('openView').style.display = 'block';
+                document.getElementById('topic').textContent = room.topic;
+            } else if (room.status === 'closed') {
+                document.getElementById('closedView').style.display = 'block';
+                document.getElementById('topicClosed').textContent = room.topic;
+            } else if (room.status === 'finished') {
+                document.getElementById('finishedView').style.display = 'block';
+                document.getElementById('topicFinished').textContent = room.topic;
+                document.getElementById('winnerResult').textContent = `Winner: ${room.winner}`;
+            }
+        }
+
+        load();
+
+        document.getElementById('entryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const author = document.getElementById('authorInput').value.trim();
+            const value = document.getElementById('valueInput').value.trim();
+            if (!author || !value) return;
+
+            const res = await fetch(`/api/rooms/${roomId}/entries`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ author, value }),
+            });
+
+            if (res.ok) {
+                document.getElementById('entryForm').style.display = 'none';
+                document.getElementById('submitted').style.display = 'block';
+            } else {
+                const err = await res.json();
+                alert(err.error || 'Failed to submit');
+            }
+        });
+    </script>
+</body>
+</html>
