@@ -1,39 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Picker Wheel — Room</title>
+    <title>Крутилка</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="container landing">
-        <h1>Picker Wheel</h1>
+        <h1>Крутилка</h1>
 
-        <div id="loading">Loading...</div>
+        <div id="loading">Загрузка...</div>
 
-        <!-- Room is open: show submission form -->
+        <!-- Приём открыт -->
         <div id="openView" style="display:none">
             <h2 id="topic" class="topic"></h2>
             <form id="entryForm" class="create-form">
-                <label for="authorInput">Your name</label>
-                <input type="text" id="authorInput" placeholder="e.g. John" required>
-                <label for="valueInput">Your pick</label>
-                <input type="text" id="valueInput" placeholder="e.g. Pizza" required>
-                <button type="submit">Submit</button>
+                <label for="authorInput">Ваше имя</label>
+                <input type="text" id="authorInput" placeholder="Например: Иван" required>
+                <label for="valueInput">Ваш вариант</label>
+                <input type="text" id="valueInput" placeholder="Например: Пицца" required>
+                <button type="submit">Отправить</button>
             </form>
             <div id="submitted" class="result" style="display:none">
-                Submitted! The admin will spin the wheel when everyone's ready.
+                Отправлено! Админ крутанёт колесо, когда все будут готовы.
             </div>
         </div>
 
-        <!-- Room is closed: waiting -->
+        <!-- Приём закрыт -->
         <div id="closedView" style="display:none">
             <h2 id="topicClosed" class="topic"></h2>
-            <div class="result">Submissions are closed. The wheel will be spun soon!</div>
+            <div class="result">Приём вариантов закрыт. Скоро крутанут колесо!</div>
         </div>
 
-        <!-- Room is finished: show winner -->
+        <!-- Победитель -->
         <div id="finishedView" style="display:none">
             <h2 id="topicFinished" class="topic"></h2>
             <div class="result winner" id="winnerResult"></div>
@@ -46,7 +46,7 @@
         async function load() {
             const res = await fetch(`/api/rooms/${roomId}`);
             if (!res.ok) {
-                document.getElementById('loading').textContent = 'Room not found.';
+                document.getElementById('loading').textContent = 'Комната не найдена.';
                 return;
             }
             const room = await res.json();
@@ -61,7 +61,7 @@
             } else if (room.status === 'finished') {
                 document.getElementById('finishedView').style.display = 'block';
                 document.getElementById('topicFinished').textContent = room.topic;
-                document.getElementById('winnerResult').textContent = `Winner: ${room.winner}`;
+                document.getElementById('winnerResult').textContent = `Победитель: ${room.winner}`;
             }
         }
 
@@ -84,7 +84,7 @@
                 document.getElementById('submitted').style.display = 'block';
             } else {
                 const err = await res.json();
-                alert(err.error || 'Failed to submit');
+                alert(err.error || 'Не удалось отправить');
             }
         });
     </script>

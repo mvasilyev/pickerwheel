@@ -1,41 +1,40 @@
-# Picker Wheel
+# Крутилка
 
-A multiplayer picker wheel app. An admin creates a room with a topic, shares a link with participants, and spins the wheel to pick a winner.
+Многопользовательское колесо случайного выбора. Админ создаёт комнату с темой, раздаёт ссылку участникам и крутит колесо, чтобы выбрать победителя.
 
-## How It Works
+## Как это работает
 
-1. Admin opens the app, enters a topic, and creates a room
-2. Admin shares the participant link with everyone
-3. Participants open the link, enter their name and pick
-4. Admin closes submissions, moderates entries, and spins the wheel
-5. Admin publishes the winner — participants see it when they revisit the link
+1. Админ открывает приложение, вводит тему и создаёт комнату
+2. Админ раздаёт участникам ссылку на комнату
+3. Участники переходят по ссылке, вводят своё имя и вариант
+4. Админ закрывает приём, модерирует варианты и крутит колесо
+5. Админ публикует победителя — участники увидят результат, зайдя по ссылке снова
 
-### Coin Toss Mode
+### Режим монетки
 
-When there are exactly 2 entries, the wheel turns into a 3D coin flip.
+Если вариантов ровно 2, колесо превращается в 3D-монетку (орёл/решка).
 
-### Easter Egg
+### Пасхалка
 
-Add `?polish` to any URL to switch to grayscale mode.
+Добавьте `?polish` к любому URL, чтобы переключить колесо в ч/б режим.
 
-## Tech Stack
+## Стек
 
-- **Backend**: Node.js, Express, SQLite (better-sqlite3)
-- **Frontend**: Vanilla JS, HTML5 Canvas
-- **Deployment**: Docker Compose + Caddy (automatic HTTPS)
+- **Бэкенд**: Node.js, Express, SQLite (better-sqlite3)
+- **Фронтенд**: Vanilla JS, HTML5 Canvas
+- **Деплой**: Docker Compose + Caddy (автоматический HTTPS)
 
-## Deploy
+## Деплой
 
-On a fresh server with root access and an A-record pointing to it:
+На свежем сервере с root-доступом и A-записью, указывающей на него:
 
 ```bash
-git clone https://github.com/mvasilyev/pickerwheel.git /opt/pickerwheel
-bash /opt/pickerwheel/deploy/setup.sh your-domain.com
+curl -fsSL https://raw.githubusercontent.com/mvasilyev/pickerwheel/main/deploy/setup.sh | bash -s your-domain.com
 ```
 
-The script installs Docker, creates a non-root user, builds the containers, and starts everything. Caddy handles SSL certificates automatically.
+Скрипт установит Docker, создаст пользователя, соберёт контейнеры и запустит всё. Caddy получит SSL-сертификат автоматически.
 
-## Local Development
+## Локальная разработка
 
 ```bash
 cd server
@@ -44,19 +43,19 @@ node index.js
 # http://localhost:3000
 ```
 
-## Project Structure
+## Структура проекта
 
 ```
-public/           Frontend
-  index.html      Landing page — create a room
-  room.html       Participant view — submit a pick
-  admin.html      Admin view — moderate, spin, publish
-  wheel.js        PickerWheel class (canvas rendering)
-  style.css       Styles
-server/           Backend
-  index.js        Express server + API routes
-  db.js           SQLite schema and queries
-deploy/           Deployment
-  setup.sh        One-shot server setup script
-  Caddyfile.template  Caddy config template
+public/                 Фронтенд
+  index.html            Главная — создание комнаты
+  room.html             Страница участника — отправка варианта
+  admin.html            Админка — модерация, колесо, публикация
+  wheel.js              Класс PickerWheel (Canvas)
+  style.css             Стили
+server/                 Бэкенд
+  index.js              Express-сервер + API
+  db.js                 SQLite-схема и запросы
+deploy/                 Деплой
+  setup.sh              Скрипт настройки сервера
+  Caddyfile.template    Шаблон конфига Caddy
 ```

@@ -1,28 +1,28 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Picker Wheel — Admin</title>
+    <title>Крутилка — Админка</title>
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
     <div class="container">
-        <h1 id="topic">Picker Wheel</h1>
+        <h1 id="topic">Крутилка</h1>
 
         <div class="input-section">
             <div id="statusBar" class="status-bar"></div>
 
             <div class="contestants-list">
-                <h3>Entries:</h3>
+                <h3>Варианты:</h3>
                 <ul id="contestantsList"></ul>
-                <p id="emptyMsg" style="color:#999; padding:10px">No entries yet.</p>
+                <p id="emptyMsg" style="color:#999; padding:10px">Пока ничего нет.</p>
             </div>
 
             <div class="admin-actions">
-                <button id="closeBtn" class="action-btn close-btn">Close Submissions</button>
-                <button id="reopenBtn" class="action-btn reopen-btn" style="display:none">Re-open Submissions</button>
-                <button id="refreshBtn" class="action-btn refresh-btn">Refresh</button>
+                <button id="closeBtn" class="action-btn close-btn">Закрыть приём</button>
+                <button id="reopenBtn" class="action-btn reopen-btn" style="display:none">Открыть приём</button>
+                <button id="refreshBtn" class="action-btn refresh-btn">Обновить</button>
             </div>
 
             <div id="participantLink" class="link-box" style="margin-top:10px"></div>
@@ -35,14 +35,14 @@
             </div>
 
             <div class="spin-buttons">
-                <button id="spinBtn" disabled>SPIN</button>
-                <button id="respinBtn" disabled>RE-SPIN</button>
+                <button id="spinBtn" disabled>КРУТИТЬ</button>
+                <button id="respinBtn" disabled>ЕЩЁ РАЗ</button>
             </div>
 
             <div id="result" class="result"></div>
 
             <button id="publishBtn" class="action-btn publish-btn" style="display:none">
-                Publish Winner
+                Опубликовать победителя
             </button>
         </div>
     </div>
@@ -58,11 +58,10 @@
         // --- Init ---
 
         async function init() {
-            // First call authenticates and sets cookie (token in URL)
             const qs = urlToken ? `?token=${encodeURIComponent(urlToken)}` : '';
             const res = await fetch(`/api/rooms/${roomId}/admin${qs}`);
             if (!res.ok) {
-                document.body.innerHTML = '<h1 style="color:white;text-align:center;margin-top:40vh">Access denied</h1>';
+                document.body.innerHTML = '<h1 style="color:white;text-align:center;margin-top:40vh">Доступ запрещён</h1>';
                 return;
             }
 
@@ -70,17 +69,15 @@
             room = data;
             entries = data.entries;
 
-            // Strip token from URL after cookie is set
             if (window.location.search.includes('token=')) {
                 history.replaceState(null, '', window.location.pathname);
             }
 
             document.getElementById('topic').textContent = room.topic;
 
-            // Show participant link
             const pLink = `${window.location.origin}/room/${roomId}`;
             document.getElementById('participantLink').innerHTML =
-                `Share with participants: <a href="${pLink}" target="_blank">${pLink}</a>`;
+                `Ссылка для участников: <a href="${pLink}" target="_blank">${pLink}</a>`;
 
             wheel = new PickerWheel();
             render();
@@ -96,10 +93,10 @@
             const bar = document.getElementById('statusBar');
             const status = room.status;
             bar.textContent = status === 'open'
-                ? 'Submissions are OPEN'
+                ? 'Приём вариантов ОТКРЫТ'
                 : status === 'closed'
-                ? 'Submissions are CLOSED'
-                : `Finished — Winner: ${room.winner}`;
+                ? 'Приём вариантов ЗАКРЫТ'
+                : `Завершено — Победитель: ${room.winner}`;
             bar.className = `status-bar status-${status}`;
 
             document.getElementById('closeBtn').style.display =
@@ -113,8 +110,6 @@
             const emptyMsg = document.getElementById('emptyMsg');
             list.innerHTML = '';
 
-            const approvedEntries = entries.filter(e => e.approved);
-
             if (entries.length === 0) {
                 emptyMsg.style.display = 'block';
                 return;
@@ -127,8 +122,8 @@
                 li.innerHTML = `
                     <span><strong>${esc(entry.author_name)}</strong>: ${esc(entry.value)}</span>
                     <span class="entry-actions">
-                        <button class="remove-btn" onclick="toggleEntry(${entry.id}, ${entry.approved ? 0 : 1})">${entry.approved ? 'Hide' : 'Show'}</button>
-                        <button class="remove-btn" onclick="deleteEntry(${entry.id})">Delete</button>
+                        <button class="remove-btn" onclick="toggleEntry(${entry.id}, ${entry.approved ? 0 : 1})">${entry.approved ? 'Скрыть' : 'Показать'}</button>
+                        <button class="remove-btn" onclick="deleteEntry(${entry.id})">Удалить</button>
                     </span>
                 `;
                 list.appendChild(li);

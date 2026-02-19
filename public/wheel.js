@@ -30,11 +30,11 @@ class PickerWheel {
         this.respinBtn.disabled = !this.hasSpun || this.isSpinning || this.contestants.length < 2;
 
         if (this.contestants.length === 2) {
-            this.spinBtn.textContent = 'FLIP COIN';
-            this.respinBtn.textContent = 'FLIP AGAIN';
+            this.spinBtn.textContent = 'МОНЕТКА';
+            this.respinBtn.textContent = 'ЕЩЁ РАЗ';
         } else {
-            this.spinBtn.textContent = 'SPIN';
-            this.respinBtn.textContent = 'RE-SPIN';
+            this.spinBtn.textContent = 'КРУТИТЬ';
+            this.respinBtn.textContent = 'ЕЩЁ РАЗ';
         }
 
         // Show/hide publish button
@@ -69,7 +69,7 @@ class PickerWheel {
             this.ctx.fillStyle = '#666';
             this.ctx.font = '20px Arial';
             this.ctx.textAlign = 'center';
-            this.ctx.fillText('No entries yet', centerX, centerY);
+            this.ctx.fillText('Пока пусто', centerX, centerY);
             return;
         }
 
@@ -154,12 +154,12 @@ class PickerWheel {
 
             if (isShowingFront) {
                 this.ctx.font = `bold ${24 * coinThickness}px Arial`;
-                this.ctx.fillText('HEADS', centerX, centerY - 15);
+                this.ctx.fillText('ОРЁЛ', centerX, centerY - 15);
                 this.ctx.font = `bold ${18 * coinThickness}px Arial`;
                 this.ctx.fillText(this.contestants[0], centerX, centerY + 15);
             } else {
                 this.ctx.font = `bold ${24 * coinThickness}px Arial`;
-                this.ctx.fillText('TAILS', centerX, centerY - 15);
+                this.ctx.fillText('РЕШКА', centerX, centerY - 15);
                 this.ctx.font = `bold ${18 * coinThickness}px Arial`;
                 this.ctx.fillText(this.contestants[1], centerX, centerY + 15);
             }
@@ -214,7 +214,7 @@ class PickerWheel {
         if (this.isSpinning || this.contestants.length < 2 || !this.hasSpun) return;
         this.isSpinning = true;
         this.updateButtons();
-        this.result.textContent = 'Re-spinning...';
+        this.result.textContent = 'Крутим ещё раз...';
         this.result.className = 'result';
 
         const spins = Math.random() * 3 + 3;
@@ -255,8 +255,8 @@ class PickerWheel {
             const normalizedFlip = Math.abs(flipRotation) % (2 * Math.PI);
             const isHeads = Math.cos(normalizedFlip) > 0;
             winner = isHeads ? this.contestants[0] : this.contestants[1];
-            const side = isHeads ? 'HEADS' : 'TAILS';
-            this.result.textContent = `${side}! Winner: ${winner}`;
+            const side = isHeads ? 'ОРЁЛ' : 'РЕШКА';
+            this.result.textContent = `${side}! Победитель: ${winner}`;
         } else {
             const normalizedRotation = this.rotation % (2 * Math.PI);
             const angleStep = (2 * Math.PI) / this.contestants.length;
@@ -264,7 +264,7 @@ class PickerWheel {
             const adjustedAngle = topAngle < 0 ? topAngle + 2 * Math.PI : topAngle;
             const winnerIndex = Math.floor(adjustedAngle / angleStep) % this.contestants.length;
             winner = this.contestants[winnerIndex];
-            this.result.textContent = `Winner: ${winner}`;
+            this.result.textContent = `Победитель: ${winner}`;
         }
 
         this.result.className = 'result winner';
