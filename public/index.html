@@ -45,13 +45,19 @@
             const data = await res.json();
 
             const base = window.location.origin;
-            const participantUrl = `${base}/room/${data.id}`;
-            const adminUrl = `${base}/room/${data.id}/admin?token=${data.adminToken}`;
+            const participantUrl = `${base}/room/${encodeURIComponent(data.id)}`;
+            const adminUrl = `${base}/room/${encodeURIComponent(data.id)}/admin?token=${encodeURIComponent(data.adminToken)}`;
 
-            document.getElementById('participantLink').href = participantUrl;
-            document.getElementById('participantLink').textContent = participantUrl;
-            document.getElementById('adminLink').href = adminUrl;
-            document.getElementById('adminLink').textContent = adminUrl;
+            const pEl = document.getElementById('participantLink');
+            const aEl = document.getElementById('adminLink');
+            if (participantUrl.startsWith(base)) {
+                pEl.href = participantUrl;
+                pEl.textContent = participantUrl;
+            }
+            if (adminUrl.startsWith(base)) {
+                aEl.href = adminUrl;
+                aEl.textContent = adminUrl;
+            }
 
             form.style.display = 'none';
             result.style.display = 'block';

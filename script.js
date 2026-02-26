@@ -75,10 +75,13 @@ class PickerWheel {
         this.contestantsList.innerHTML = '';
         this.contestants.forEach((contestant, index) => {
             const li = document.createElement('li');
-            li.innerHTML = `
-                <span>${contestant}</span>
-                <button class="remove-btn" onclick="wheel.removeContestant(${index})">Remove</button>
-            `;
+            const span = document.createElement('span');
+            span.textContent = contestant;
+            const btn = document.createElement('button');
+            btn.className = 'remove-btn';
+            btn.textContent = 'Remove';
+            btn.addEventListener('click', () => wheel.removeContestant(index));
+            li.append(span, btn);
             this.contestantsList.appendChild(li);
         });
     }

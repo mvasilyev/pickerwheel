@@ -75,9 +75,14 @@
 
             document.getElementById('topic').textContent = room.topic;
 
-            const pLink = `${window.location.origin}/room/${roomId}`;
-            document.getElementById('participantLink').innerHTML =
-                `Ссылка для участников: <a href="${pLink}" target="_blank">${pLink}</a>`;
+            const pLink = `${window.location.origin}/room/${encodeURIComponent(roomId)}`;
+            const linkEl = document.getElementById('participantLink');
+            linkEl.textContent = 'Ссылка для участников: ';
+            const a = document.createElement('a');
+            a.href = pLink;
+            a.target = '_blank';
+            a.textContent = pLink;
+            linkEl.appendChild(a);
 
             wheel = new PickerWheel();
             render();
