@@ -203,6 +203,7 @@ class PickerWheel {
     spinWheel() {
         if (this.isSpinning || this.contestants.length < 2) return;
         this.isSpinning = true;
+        this.lastWinner = null;
         this.updateButtons();
         this.clearResult();
 
@@ -213,9 +214,11 @@ class PickerWheel {
     respinWheel() {
         if (this.isSpinning || this.contestants.length < 2 || !this.hasSpun) return;
         this.isSpinning = true;
+        this.lastWinner = null;
         this.updateButtons();
         this.result.textContent = 'Крутим ещё раз...';
         this.result.className = 'result';
+        this.hasSpun = false;
 
         const spins = Math.random() * 3 + 3;
         this.animateWheel(spins * 2 * Math.PI);
@@ -246,9 +249,9 @@ class PickerWheel {
     finishSpin() {
         this.isSpinning = false;
         this.hasSpun = true;
-        this.updateButtons();
 
         let winner;
+        let winnerText;
 
         if (this.contestants.length === 2) {
             const flipRotation = this.rotation * 2;
@@ -256,7 +259,7 @@ class PickerWheel {
             const isHeads = Math.cos(normalizedFlip) > 0;
             winner = isHeads ? this.contestants[0] : this.contestants[1];
             const side = isHeads ? 'ОРЁЛ' : 'РЕШКА';
-            this.result.textContent = `${side}! Победитель: ${winner}`;
+            winnerText = `${side}! Победитель: ${winner}`;
         } else {
             const normalizedRotation = this.rotation % (2 * Math.PI);
             const angleStep = (2 * Math.PI) / this.contestants.length;
@@ -264,9 +267,34 @@ class PickerWheel {
             const adjustedAngle = topAngle < 0 ? topAngle + 2 * Math.PI : topAngle;
             const winnerIndex = Math.floor(adjustedAngle / angleStep) % this.contestants.length;
             winner = this.contestants[winnerIndex];
-            this.result.textContent = `Победитель: ${winner}`;
+            winnerText = `Победитель: ${winner}`;
         }
 
+        const hasValera = this.contestants.some((contestant) => contestant.endsWith('(Валера)'));
+        const isValeraWinner = winner.endsWith('(Валера)');
+
+        if (hasValera && !isValeraWinner) {
+            this.result.textContent = 'Так, не Валера, крутим еще раз';
+            this.result.className = 'result';
+            this.lastWinner = null;
+            this.updateButtons();
+
+            setTimeout(() => {
+                if (!this.isSpinning) {
+                    this.isSpinning = true;
+                    this.updateButtons();
+                    this.result.textContent = 'Так, не Валера, крутим еще раз';
+                    this.result.className = 'result';
+                    this.hasSpun = false;
+
+                    const spins = Math.random() * 3 + 3;
+                    this.animateWheel(spins * 2 * Math.PI);
+                }
+            }, 900);
+            return;
+        }
+
+        this.result.textContent = winnerText;
         this.result.className = 'result winner';
         this.lastWinner = winner;
         this.updateButtons();
