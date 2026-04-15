@@ -5,9 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Крутилка — Админка</title>
     <link rel="stylesheet" href="/style.css">
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <div class="container">
+        <span class="casino-decor top-left">&spades;</span>
+        <span class="casino-decor bottom-right">&diams;</span>
+
         <h1 id="topic">Крутилка</h1>
 
         <div class="input-section">
@@ -32,7 +43,6 @@
         <div class="wheel-section">
             <div class="wheel-container">
                 <canvas id="wheelCanvas" width="400" height="400"></canvas>
-                <div class="pointer"></div>
             </div>
 
             <div class="spin-buttons">
@@ -48,8 +58,8 @@
         </div>
     </div>
 
-    <script src="/wheel.js"></script>
-    <script>
+    <script type="module" src="/wheel.js?v=10"></script>
+    <script type="module">
         const roomId = window.location.pathname.split('/')[2];
         const urlToken = new URLSearchParams(window.location.search).get('token');
         let room = null;
@@ -222,6 +232,10 @@
             btn.textContent = 'Скопировано!';
             setTimeout(() => { btn.textContent = original; }, 1500);
         }
+
+        // Expose to onclick attributes in rendered HTML
+        window.toggleEntry = toggleEntry;
+        window.deleteEntry = deleteEntry;
 
         // --- Wire up buttons ---
 

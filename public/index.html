@@ -8,7 +8,11 @@
 </head>
 <body>
     <div class="container landing">
+        <span class="casino-decor top-left">&spades;</span>
+        <span class="casino-decor bottom-right">&diams;</span>
+
         <h1>Крутилка</h1>
+        <div class="ornament">&clubs; &diams; &hearts; &spades;</div>
 
         <form id="createForm" class="create-form">
             <label for="topicInput">Тема</label>
@@ -17,11 +21,12 @@
         </form>
 
         <div id="result" class="result" style="display:none">
-            <p>Комната создана! Ссылка для участников:</p>
+            <p>Комната создана!</p>
+            <p style="color: var(--text-secondary); font-size: 14px; font-weight: 400;">Ссылка для участников:</p>
             <div class="link-box">
                 <a id="participantLink" href="#" target="_blank"></a>
             </div>
-            <p style="margin-top:12px">Ваша админка:</p>
+            <p style="margin-top:8px; color: var(--text-secondary); font-size: 14px; font-weight: 400;">Ваша админка:</p>
             <div class="link-box">
                 <a id="adminLink" href="#" target="_blank"></a>
             </div>
