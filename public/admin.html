@@ -23,6 +23,7 @@
                 <button id="closeBtn" class="action-btn close-btn">Закрыть приём</button>
                 <button id="reopenBtn" class="action-btn reopen-btn" style="display:none">Открыть приём</button>
                 <button id="refreshBtn" class="action-btn refresh-btn">Обновить</button>
+                <button id="copyAllBtn" class="action-btn copy-btn">Скопировать всех</button>
             </div>
 
             <div id="participantLink" class="link-box" style="margin-top:10px"></div>
@@ -211,12 +212,24 @@
             return d.innerHTML;
         }
 
+        async function copyAllEntries() {
+            const approved = entries.filter(e => e.approved);
+            if (approved.length === 0) return;
+            const text = approved.map(e => `${e.value} (${e.author_name})`).join('\n');
+            await navigator.clipboard.writeText(text);
+            const btn = document.getElementById('copyAllBtn');
+            const original = btn.textContent;
+            btn.textContent = 'Скопировано!';
+            setTimeout(() => { btn.textContent = original; }, 1500);
+        }
+
         // --- Wire up buttons ---
 
         document.getElementById('closeBtn').addEventListener('click', closeSubmissions);
         document.getElementById('reopenBtn').addEventListener('click', reopenSubmissions);
         document.getElementById('refreshBtn').addEventListener('click', refresh);
         document.getElementById('publishBtn').addEventListener('click', publishWinner);
+        document.getElementById('copyAllBtn').addEventListener('click', copyAllEntries);
 
         init();
     </script>

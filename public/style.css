@@ -241,6 +241,11 @@ h2.topic {
     color: white;
 }
 
+.copy-btn {
+    background: #9C27B0;
+    color: white;
+}
+
 .publish-btn {
     background: linear-gradient(45deg, #4CAF50, #45a049);
     color: white;
